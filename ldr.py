@@ -51,11 +51,9 @@ def qdf(data, sampleCov, sampleMean):
 rep = 500
 dataDim = 10 
 totalClass = 3
-sampleSize = 7 
-fold = 10
+trainSize = 7 
 testMaxDim = 10
-testSize = int(totalClass*sampleSize / fold)
-trainSize = sampleSize - testSize
+testSize = 5000
 totalCer = np.zeros((rep, testMaxDim))
 
 cov1 = np.eye(10)
@@ -69,5 +67,19 @@ mean1 = np.array([-1.43, -0.66, -0.94, 0.31, -0.19, 0.89, 0.25, -0.34, 1.25, -1.
 mean2 = np.array([-0.43, 0.34, 0.06, 1.31, 0.81, 1.89, 1.25, 0.66, 2.25, -0.6])
 mean3 = np.array([0.57, 1.34, 1.06, 2.31, 1.81, 2.89, 2.25, 1.66, 3.25, 0.4])
 
+train1 = np.random.multivariate_normal(mean1, cov1, size=trainSize)
+train2 = np.random.multivariate_normal(mean2, cov2, size=trainSize)
+train3 = np.random.multivariate_normal(mean3, cov3, size=trainSize)
+
+test1 = np.random.multivariate_normal(mean1, cov1, size = testSize)
+test2 = np.random.multivariate_normal(mean2, cov2, size = testSize)
+test3 = np.random.multivariate_normal(mean3, cov3, size = testSize)
+
 for dim in range(1, testMaxDim+1):
     cer = [] #initialize error rate to be empty list
+    
+
+
+
+
+
