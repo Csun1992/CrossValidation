@@ -46,7 +46,7 @@ def classify(dist1, dist2, dist3):
 def qdf(data, sampleCov, sampleMean):
     distance = math.log(np.linalg.det(np.matrix(sampleCov))) + \
         (data-sampleMean).T.dot(np.linalg.inv(np.matrix(sampleCov))).dot(data-sampleMean)
-    return distance
+    return np.asscalar(distance)
 
 # Initialize experiment parameters
 totalRep = 500
@@ -115,10 +115,10 @@ for rep in range(1, totalRep+1):
     M2 = np.column_stack((sTildeInv2.dot(sampleMean2)-sTildeInv1.dot(sampleMean1),\
     sTildeInv3.dot(sampleMean3)-sTildeInv1.dot(sampleMean1), sampleCov2-sampleCov1,\
     sampleCov3-sampleCov1))
-    F,v,d = np.linalg.svd(M2)
-
+    Fhat,v,d = np.linalg.svd(M2)
+    
     for dim in range(1, testMaxDim+1):
-        F = F[:, 0:dim] 
+        F = Fhat[:, 0:dim] 
         reduceTrain1 = train1.dot(F)
         reduceTrain2 = train2.dot(F)
         reduceTrain3 = train3.dot(F)
@@ -134,12 +134,12 @@ for rep in range(1, totalRep+1):
     
         misclassify = 0
         for j in range(testSize):
-            dist1 = qdf(reduceTest[j, :].T, sampleCov1, sampleMean1)
-            dist2 = qdf(reduceTest[j, :].T, sampleCov2, sampleMean2)
-            dist3 = qdf(reduceTest[j, :].T, sampleCov3, sampleMean3)
+            dist1 = qdf(reduceTest[j, :].reshape(-1,1), sampleCov1, sampleMean1)
+            dist2 = qdf(reduceTest[j, :].reshape(-1,1), sampleCov2, sampleMean2)
+            dist3 = qdf(reduceTest[j, :].reshape(-1,1), sampleCov3, sampleMean3)
             if classify(dist1, dist2, dist3) != groupNum[j]:
                 misclassify += 1
         errorRate = float(misclassify) / testSize 
         aggregateErrorRate[rep-1, dim-1] = errorRate
 
-np.save('dataFile', totalCer)
+np.save('dataFile', aggregateErrorRate)
