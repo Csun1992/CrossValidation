@@ -49,7 +49,7 @@ def qdf(data, sampleCov, sampleMean):
     return distance
 
 # Initialize experiment parameters
-rep = 500
+totalRep = 500
 dataDim = 10 
 totalClass = 3
 trainSize = 7 
@@ -70,62 +70,81 @@ mean2 = np.array([-0.43, 0.34, 0.06, 1.31, 0.81, 1.89, 1.25, 0.66, 2.25, -0.6])
 mean3 = np.array([0.57, 1.34, 1.06, 2.31, 1.81, 2.89, 2.25, 1.66, 3.25, 0.4])
 
 # Generate test data
-test1 = np.random.multivariate_normal(mean1, cov1, size = testSize)
-test2 = np.random.multivariate_normal(mean2, cov2, size = testSize)
-test3 = np.random.multivariate_normal(mean3, cov3, size = testSize)
-test = np.concatenate((test1, test2, test3), axis=0)
-groupNum = np.column_stack((np.ones(testSize), 2*np.ones(testSize), 3*np.ones(testSize)))
-
-train1 = np.random.multivariate_normal(mean1, cov1, size=trainSize)
-train2 = np.random.multivariate_normal(mean2, cov2, size=trainSize)
-train3 = np.random.multivariate_normal(mean3, cov3, size=trainSize)
-
-sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
-sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1) 
-sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1) 
-
-sampleCov1 = np.cov(train1.T)
-sampleCov2 = np.cov(train2.T)
-sampleCov3 = np.cov(train3.T)
-
-M1 = np.concatenate((mean2-mean1, mean3-mean2, sampleCov2-sampleCov1, sampleCov3-sampleCov1), axis=1)
-F, u, v = np.linalg.svd(M1)
-F = F(:, 0:(1+min(trainSize, 0.95*np.size(F, 1)))) # Get the minimum of 95% of column and 7
-
-train1 = train1.dot(F)
-train2 = train2.dot(F)
-train3 = train3.dot(F)
-test = test.dot(F)
-
-sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
-sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1) 
-sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1) 
-
-sampleCov1 = np.cov(train1.T)
-sampleCov2 = np.cov(train2.T)
-sampleCov3 = np.cov(train3.T)
-
-
-sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
-sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1)
-sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1)
-
-sampleCov1 = np.cov(train1.T)
-sampleCov2 = np.cov(train2.T)
-sampleCov3 = np.cov(train3.T)
-
-sTildeInv1 = sTildeInv(sampleCov1, dataDim, trainSize) 
-sTildeInv2 = sTildeInv(sampleCov2, dataDim, trainSize) 
-sTildeInv3 = sTildeInv(sampleCov3, dataDim, trainSize) 
-M2 = np.column_stack((sTildeInv2.dot(sampleMean2)-sTildeInv1.dot(sampleMean1),\
-sTildeInv3.dot(sampleMean3)-sTildeInv1.dot(sampleMean1), sampleCov2-sampleCov1,\
-sampleCov3-sampleCov1))
-F,v,d = np.linalg.svd(M2)
-
-for dim in range(1, testMaxDim+1):
-    F = F[:, 0:dim] 
+aggregateErrorRate = np.zeros(totalRep, testMaxDim)
+for rep in range(1, totalRep+1): 
+    test1 = np.random.multivariate_normal(mean1, cov1, size = testSize)
+    test2 = np.random.multivariate_normal(mean2, cov2, size = testSize)
+    test3 = np.random.multivariate_normal(mean3, cov3, size = testSize)
+    test = np.concatenate((test1, test2, test3), axis=0)
+    groupNum = np.column_stack((np.ones(testSize), 2*np.ones(testSize), 3*np.ones(testSize)))
+    
+    train1 = np.random.multivariate_normal(mean1, cov1, size=trainSize)
+    train2 = np.random.multivariate_normal(mean2, cov2, size=trainSize)
+    train3 = np.random.multivariate_normal(mean3, cov3, size=trainSize)
+    
+    sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
+    sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1) 
+    sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1) 
+    
+    sampleCov1 = np.cov(train1.T)
+    sampleCov2 = np.cov(train2.T)
+    sampleCov3 = np.cov(train3.T)
+    
+    M1 = np.concatenate((mean2-mean1, mean3-mean2, sampleCov2-sampleCov1, sampleCov3-sampleCov1), axis=1)
+    F, u, v = np.linalg.svd(M1)
+    F = F(:, 0:(1+min(trainSize, 0.95*np.size(F, 1)))) # Get the minimum of 95% of column and 7
+    
     train1 = train1.dot(F)
     train2 = train2.dot(F)
     train3 = train3.dot(F)
     test = test.dot(F)
-#    cer = [] #initialize error rate to be empty list
+    
+    sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
+    sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1) 
+    sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1) 
+    
+    sampleCov1 = np.cov(train1.T)
+    sampleCov2 = np.cov(train2.T)
+    sampleCov3 = np.cov(train3.T)
+    
+    
+    sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
+    sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1)
+    sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1)
+    
+    sampleCov1 = np.cov(train1.T)
+    sampleCov2 = np.cov(train2.T)
+    sampleCov3 = np.cov(train3.T)
+    
+    sTildeInv1 = sTildeInv(sampleCov1, dataDim, trainSize) 
+    sTildeInv2 = sTildeInv(sampleCov2, dataDim, trainSize) 
+    sTildeInv3 = sTildeInv(sampleCov3, dataDim, trainSize) 
+    M2 = np.column_stack((sTildeInv2.dot(sampleMean2)-sTildeInv1.dot(sampleMean1),\
+    sTildeInv3.dot(sampleMean3)-sTildeInv1.dot(sampleMean1), sampleCov2-sampleCov1,\
+    sampleCov3-sampleCov1))
+    F,v,d = np.linalg.svd(M2)
+    
+    for dim in range(1, testMaxDim+1):
+        F = F[:, 0:dim] 
+        train1 = train1.dot(F)
+        train2 = train2.dot(F)
+        train3 = train3.dot(F)
+        test = test.dot(F)
+    
+        sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
+        sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1)
+        sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1)
+        
+        sampleCov1 = np.cov(train1.T)
+        sampleCov2 = np.cov(train2.T)
+        sampleCov3 = np.cov(train3.T)
+    
+        misclassify = 0
+        for j in range(testSize):
+            dist1 = qdf(test[j, :].T, firstReducedTrainCov, firstReducedTrainMean)
+            dist2 = qdf(test[j, :].T, secondReducedTrainCov, secondReducedTrainMean)
+            dist3 = qdf(test[j, :].T, thirdReducedTrainCov, thirdReducedTrainMean)
+            if classify(dist1, dist2, dist3) != groupNum[j]:
+                misclassify += 1
+        errorRate = float(misclassify) / testSize 
+        aggregateErrorRate[rep, dim] = errorRate
