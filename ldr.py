@@ -89,7 +89,7 @@ sampleCov2 = np.cov(train2.T)
 sampleCov3 = np.cov(train3.T)
 
 M1 = np.concatenate((mean2-mean1, mean3-mean2, sampleCov2-sampleCov1, sampleCov3-sampleCov1), axis=1)
-F, u, v = np.svd(M1)
+F, u, v = np.linalg.svd(M1)
 F = F(:, 0:(1+min(trainSize, 0.95*np.size(F, 1)))) # Get the minimum of 95% of column and 7
 
 train1 = train1.dot(F)
@@ -106,7 +106,26 @@ sampleCov2 = np.cov(train2.T)
 sampleCov3 = np.cov(train3.T)
 
 
-# Perform dimension reduction
+sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
+sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1)
+sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1)
 
-#for dim in range(1, testMaxDim+1):
+sampleCov1 = np.cov(train1.T)
+sampleCov2 = np.cov(train2.T)
+sampleCov3 = np.cov(train3.T)
+
+sTildeInv1 = sTildeInv(sampleCov1, dataDim, trainSize) 
+sTildeInv2 = sTildeInv(sampleCov2, dataDim, trainSize) 
+sTildeInv3 = sTildeInv(sampleCov3, dataDim, trainSize) 
+M2 = np.column_stack((sTildeInv2.dot(sampleMean2)-sTildeInv1.dot(sampleMean1),\
+sTildeInv3.dot(sampleMean3)-sTildeInv1.dot(sampleMean1), sampleCov2-sampleCov1,\
+sampleCov3-sampleCov1))
+F,v,d = np.linalg.svd(M2)
+
+for dim in range(1, testMaxDim+1):
+    F = F[:, 0:dim] 
+    train1 = train1.dot(F)
+    train2 = train2.dot(F)
+    train3 = train3.dot(F)
+    test = test.dot(F)
 #    cer = [] #initialize error rate to be empty list
