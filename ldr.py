@@ -71,53 +71,53 @@ mean3 = np.array([0.57, 1.34, 1.06, 2.31, 1.81, 2.89, 2.25, 1.66, 3.25, 0.4])
 
 # Generate test data
 aggregateErrorRate = np.zeros((totalRep, testMaxDim))
-for rep in range(1, totalRep+1): 
-    test1 = np.random.multivariate_normal(mean1, cov1, size = testSize)
-    test2 = np.random.multivariate_normal(mean2, cov2, size = testSize)
-    test3 = np.random.multivariate_normal(mean3, cov3, size = testSize)
-    test = np.concatenate((test1, test2, test3), axis=0)
-    groupNum = np.concatenate((np.ones(testSize), 2*np.ones(testSize), 3*np.ones(testSize)), axis =
-            0)
-    
-    train1 = np.random.multivariate_normal(mean1, cov1, size=trainSize)
-    train2 = np.random.multivariate_normal(mean2, cov2, size=trainSize)
-    train3 = np.random.multivariate_normal(mean3, cov3, size=trainSize)
-    
-    sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
-    sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1) 
-    sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1) 
-    
-    sampleCov1 = np.cov(train1.T)
-    sampleCov2 = np.cov(train2.T)
-    sampleCov3 = np.cov(train3.T)
-    
-    M1 = np.concatenate((sampleMean2-sampleMean1, sampleMean3-sampleMean2, sampleCov2-sampleCov1, sampleCov3-sampleCov1), axis=1)
-    F, u, v = np.linalg.svd(M1, full_matrices=False)
-    dataDim = 6#min(trainSize, math.floor(0.95*np.size(F, 1)))
-    F = F[:, 0:dataDim] # Get the minimum of 95% of column and 7
-    
-    train1 = train1.dot(F)
-    train2 = train2.dot(F)
-    train3 = train3.dot(F)
-    test = test.dot(F)
-    
-    sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
-    sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1)
-    sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1)
-    
-    sampleCov1 = np.cov(train1.T)
-    sampleCov2 = np.cov(train2.T)
-    sampleCov3 = np.cov(train3.T)
-    
-    sTildeInv1 = sTildeInv(sampleCov1, dataDim, trainSize) 
-    sTildeInv2 = sTildeInv(sampleCov2, dataDim, trainSize) 
-    sTildeInv3 = sTildeInv(sampleCov3, dataDim, trainSize) 
-    M2 = np.column_stack((sTildeInv2.dot(sampleMean2)-sTildeInv1.dot(sampleMean1),\
-    sTildeInv3.dot(sampleMean3)-sTildeInv1.dot(sampleMean1), sampleCov2-sampleCov1,\
-    sampleCov3-sampleCov1))
-    Fhat,v,d = np.linalg.svd(M2)
-    
-    for dim in range(1, testMaxDim+1):
+for dim in range(1, testMaxDim+1):
+    for rep in range(1, totalRep+1): 
+        test1 = np.random.multivariate_normal(mean1, cov1, size = testSize)
+        test2 = np.random.multivariate_normal(mean2, cov2, size = testSize)
+        test3 = np.random.multivariate_normal(mean3, cov3, size = testSize)
+        test = np.concatenate((test1, test2, test3), axis=0)
+        groupNum = np.concatenate((np.ones(testSize), 2*np.ones(testSize), 3*np.ones(testSize)), axis =
+                0)
+        
+        train1 = np.random.multivariate_normal(mean1, cov1, size=trainSize)
+        train2 = np.random.multivariate_normal(mean2, cov2, size=trainSize)
+        train3 = np.random.multivariate_normal(mean3, cov3, size=trainSize)
+        
+        sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
+        sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1) 
+        sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1) 
+        
+        sampleCov1 = np.cov(train1.T)
+        sampleCov2 = np.cov(train2.T)
+        sampleCov3 = np.cov(train3.T)
+        
+        M1 = np.concatenate((sampleMean2-sampleMean1, sampleMean3-sampleMean2, sampleCov2-sampleCov1, sampleCov3-sampleCov1), axis=1)
+        F, u, v = np.linalg.svd(M1, full_matrices=False)
+        dataDim = 6#min(trainSize, math.floor(0.95*np.size(F, 1)))
+        F = F[:, 0:dataDim] # Get the minimum of 95% of column and 7
+        
+        train1 = train1.dot(F)
+        train2 = train2.dot(F)
+        train3 = train3.dot(F)
+        test = test.dot(F)
+        
+        sampleMean1 = np.mean(train1, axis=0).reshape(-1, 1)
+        sampleMean2 = np.mean(train2, axis=0).reshape(-1, 1)
+        sampleMean3 = np.mean(train3, axis=0).reshape(-1, 1)
+        
+        sampleCov1 = np.cov(train1.T)
+        sampleCov2 = np.cov(train2.T)
+        sampleCov3 = np.cov(train3.T)
+        
+        sTildeInv1 = sTildeInv(sampleCov1, dataDim, trainSize) 
+        sTildeInv2 = sTildeInv(sampleCov2, dataDim, trainSize) 
+        sTildeInv3 = sTildeInv(sampleCov3, dataDim, trainSize) 
+        M2 = np.column_stack((sTildeInv2.dot(sampleMean2)-sTildeInv1.dot(sampleMean1),\
+        sTildeInv3.dot(sampleMean3)-sTildeInv1.dot(sampleMean1), sampleCov2-sampleCov1,\
+        sampleCov3-sampleCov1))
+        Fhat,v,d = np.linalg.svd(M2)
+        
         F = Fhat[:, 0:dim] 
         reduceTrain1 = train1.dot(F)
         reduceTrain2 = train2.dot(F)
